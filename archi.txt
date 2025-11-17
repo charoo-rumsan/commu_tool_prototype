@@ -1,0 +1,46 @@
+              [ FastAPI /upload ] 
+                       ↓
+┌──────────────────────────────────────────────┐
+│              HeaderExtractor                 │
+│  → Clean + normalize headers                 │
+└──────────────────────────────────────────────┘
+                       ↓
+┌──────────────────────────────────────────────┐
+│              HeaderClassifier                │
+│  → Compare with standard schema (Qdrant)     │
+│  → Identify 'phone_number' + 'citizenship'   │
+└──────────────────────────────────────────────┘
+                      ↓
+┌──────────────────────────────────────────────┐
+│               Deduplicator                   │
+│  → Detect duplicates within chosen columns   │
+└──────────────────────────────────────────────┘
+                     ↓
+┌──────────────────────────────────────────────┐
+│          Phone & Citizenship Validator       │
+│  → Validate number format + correctness      │
+└──────────────────────────────────────────────┘
+                     ↓
+         ✅ Unified Response (JSON)
+
+
+
+
+
+FILE STRUCTURE:
+
+qdrant_header_service/
+│
+├── app/
+│   ├── main.py                  ← Orchestrates everything
+│   ├── header_extraction.py     ← Extract headers
+│   ├── header_classifier.py     ← Match headers using Qdrant
+│   ├── vector_search.py         ← Qdrant + embeddings logic
+│   ├── fuzzy_utils.py           ← Fuzzy scoring helpers
+│   ├── deduplication_utils.py   ← Deduplicate key columns
+│   └── validation_utils.py      ← Validate phone & citizenship
+│
+├── requirements.txt
+├── Dockerfile
+└── docker-compose.yml
+
