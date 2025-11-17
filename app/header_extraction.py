@@ -21,11 +21,11 @@ class HeaderExtractor:
         print(f"✅ Extracted {len(headers)} headers from file.")
 
         # Store headers in Qdrant
-        vse = VectorSearchEngine(collection_name=f"dataset_headers_{file_id}")
-        qdrant_ids = vse.store_vectors(headers, [{"position": i} for i in range(len(headers))])
-        print(f"✅ Stored {len(qdrant_ids)} headers in Qdrant.")
+        # vse = VectorSearchEngine(collection_name=f"dataset_headers_{file_id}")
+        # qdrant_ids = vse.store_vectors(headers, [{"position": i} for i in range(len(headers))])
+        # print(f"✅ Stored {len(qdrant_ids)} headers in Qdrant.")
 
-        return {"headers": headers, "qdrant_ids": qdrant_ids}
+        return {"headers": headers}
 
     def _extract_headers(self, file_path: str):
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:

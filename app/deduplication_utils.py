@@ -138,14 +138,18 @@ class Deduplicator:
                     batch_duplicates = self._find_duplicates_in_batch(batch_df, column, column_type)
 
                     # Adjust indices relative to original DataFrame
-                    adjusted_groups = [
-                        {batch_df.index[idx] for idx in group}
-                        for group in batch_duplicates
-                    ]
+                    adjusted_groups = [set(group) for group in batch_duplicates]
                     duplicate_groups.extend(adjusted_groups)
 
-            results[column] = duplicate_groups
-            stats["duplicate_groups"][column] = len(duplicate_groups)
-            stats["unique_values"][column] = len(df) - sum(len(g) - 1 for g in duplicate_groups)
+            serializable_groups = [
+                sorted(int(idx) for idx in group)
+                for group in duplicate_groups
+            ]
+
+            results[column] = serializable_groups
+            stats["duplicate_groups"][column] = len(serializable_groups)
+            stats["unique_values"][column] = int(
+                len(df) - sum(len(g) - 1 for g in serializable_groups)
+            )
 
         return {"results": results, "statistics": stats}
