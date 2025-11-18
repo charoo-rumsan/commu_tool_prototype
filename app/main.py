@@ -10,6 +10,7 @@ from fastapi import FastAPI, UploadFile, File
 from .header_extraction import HeaderExtractor
 from .header_classifier import HeaderClassifier
 from .deduplication_utils import Deduplicator
+from .validation import run_validations
 
 app = FastAPI(title="Header-Qdrant-Deduplication Service")
 
@@ -20,6 +21,7 @@ async def upload_csv(file: UploadFile = File(...)):
     2. Extract headers.
     3. Classify them using Qdrant + ML.
     4. Run deduplication for phone_number and citizenship_number.
+    5. Validate phone/citizenship columns post-deduplication.
     """
 
     # -----------------------------
@@ -93,10 +95,29 @@ async def upload_csv(file: UploadFile = File(...)):
         dedup_results = {"message": "No phone_number or citizenship_number columns detected"}
     step_timings["deduplicate_seconds"] = round(time.perf_counter() - step_start, 4)
 
+    # -----------------------------
+    # Step 5: Validate columns
+    # -----------------------------
+    step_start = time.perf_counter()
+    phone_col_for_validation = (
+        best_phone_col if best_phone_col and best_phone_col in df.columns else None
+    )
+    citizenship_col_for_validation = (
+        best_citizenship_col
+        if best_citizenship_col and best_citizenship_col in df.columns
+        else None
+    )
+    df, validation_results = run_validations(
+        df=df,
+        phone_col=phone_col_for_validation,
+        citizenship_col=citizenship_col_for_validation,
+    )
+    step_timings["validation_seconds"] = round(time.perf_counter() - step_start, 4)
+
     overall_duration = round(time.perf_counter() - overall_start, 4)
 
     # -----------------------------
-    # Step 5: Capture resource usage snapshot
+    # Step 6: Capture resource usage snapshot
     # -----------------------------
     memory_info = process.memory_info()
     virtual_memory = psutil.virtual_memory()
@@ -114,13 +135,14 @@ async def upload_csv(file: UploadFile = File(...)):
     }
 
     # -----------------------------
-    # Step 5: Return unified response
+    # Step 7: Return unified response
     # -----------------------------
     return {
         "file_id": str(file_id),
         "extracted_headers": headers,
         "classified_headers": classified,
         "deduplication_results": dedup_results,
+        "validation_results": validation_results,
         "metrics": {
             "timings_seconds": {**step_timings, "total_seconds": overall_duration},
             "resource_usage": resource_usage,

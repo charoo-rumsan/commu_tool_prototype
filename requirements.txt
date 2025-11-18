@@ -7,6 +7,7 @@ sentence-transformers==2.2.2
 torch==2.2.0 --extra-index-url https://download.pytorch.org/whl/cpu
 numpy<2
 huggingface_hub<0.20.0
+phonenumbers
 
 
 
