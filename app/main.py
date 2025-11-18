@@ -95,6 +95,20 @@ async def upload_csv(file: UploadFile = File(...)):
         dedup_results = {"message": "No phone_number or citizenship_number columns detected"}
     step_timings["deduplicate_seconds"] = round(time.perf_counter() - step_start, 4)
 
+    # Derive high-level duplicate flags for response
+    is_duplicate = False
+    duplicate_col_name = None
+    if isinstance(dedup_results, dict) and "results" in dedup_results:
+        duplicate_cols = []
+        for col, col_type in columns_to_check:
+            groups = dedup_results["results"].get(col, [])
+            if groups:
+                duplicate_cols.append(col_type)
+        if duplicate_cols:
+            is_duplicate = True
+            # If multiple columns have duplicates, report the first; can be extended to list if needed
+            duplicate_col_name = duplicate_cols[0]
+
     # -----------------------------
     # Step 5: Validate columns
     # -----------------------------
@@ -143,6 +157,8 @@ async def upload_csv(file: UploadFile = File(...)):
         "classified_headers": classified,
         "deduplication_results": dedup_results,
         "validation_results": validation_results,
+        "is_duplicate": is_duplicate,
+        "duplicate_col_name": duplicate_col_name,
         "metrics": {
             "timings_seconds": {**step_timings, "total_seconds": overall_duration},
             "resource_usage": resource_usage,
