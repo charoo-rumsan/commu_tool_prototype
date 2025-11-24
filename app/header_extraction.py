@@ -3,7 +3,6 @@ import os
 import uuid
 from pathlib import Path
 import polars as pl
-from .vector_search import VectorSearchEngine
 
 class HeaderExtractor:
     def __init__(self):
@@ -20,8 +19,9 @@ class HeaderExtractor:
         headers = self._extract_headers(file_path)
         print(f"✅ Extracted {len(headers)} headers from file.")
 
-        # Store headers in Qdrant
-        # vse = VectorSearchEngine(collection_name=f"dataset_headers_{file_id}")
+        # Store headers in Qdrant (if needed in future)
+        # from .factories import ProcessorFactory
+        # vse = ProcessorFactory.create_vector_search_engine(collection_name=f"dataset_headers_{file_id}")
         # qdrant_ids = vse.store_vectors(headers, [{"position": i} for i in range(len(headers))])
         # print(f"✅ Stored {len(qdrant_ids)} headers in Qdrant.")
 

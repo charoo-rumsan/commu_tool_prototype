@@ -6,6 +6,8 @@ import polars as pl
 import phonenumbers
 from phonenumbers import geocoder
 
+from .factories import ProcessorFactory
+
 
 class PhoneValidator:
     """Validate and enrich phone-number columns."""
@@ -171,12 +173,12 @@ def run_validations(
     summary: Dict[str, Dict] = {}
 
     if phone_col and phone_col in pl_df.columns:
-        phone_validator = PhoneValidator(phone_col)
+        phone_validator = ProcessorFactory.create_phone_validator(phone_col)
         pl_df = phone_validator.transform(pl_df)
         summary["phone_validation"] = _summarize_phone(pl_df)
 
     if citizenship_col and citizenship_col in pl_df.columns:
-        citizenship_validator = CitizenshipValidator(citizenship_col)
+        citizenship_validator = ProcessorFactory.create_citizenship_validator(citizenship_col)
         pl_df = citizenship_validator.transform(pl_df)
         summary["citizenship_validation"] = _summarize_citizenship(pl_df)
 

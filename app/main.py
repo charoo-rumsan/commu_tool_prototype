@@ -7,9 +7,7 @@ import psutil
 
 from fastapi import FastAPI, UploadFile, File
 
-from .header_extraction import HeaderExtractor
-from .header_classifier import HeaderClassifier
-from .deduplication_utils import Deduplicator
+from .factories import ProcessorFactory
 from .validation import run_validations
 
 app = FastAPI(title="Header-Qdrant-Deduplication Service")
@@ -46,7 +44,7 @@ async def upload_csv(file: UploadFile = File(...)):
     standard_labels = [
             "name", "phone_number", "citizenship_number", "email", "address",
             "latitude", "longitude", "age", "gender", "district", "country" ]
-    extractor = HeaderExtractor()
+    extractor = ProcessorFactory.create_header_extractor()
     extraction_result = extractor.extract_headers_from_file(file_path, file_id)
     headers = extraction_result["headers"]
     step_timings["extract_headers_seconds"] = round(time.perf_counter() - step_start, 4)
@@ -56,7 +54,7 @@ async def upload_csv(file: UploadFile = File(...)):
     # -----------------------------
 
     step_start = time.perf_counter()
-    classifier = HeaderClassifier(standard_labels=standard_labels)
+    classifier = ProcessorFactory.create_header_classifier(standard_labels=standard_labels)
     classified = classifier.classify_headers(headers)
     step_timings["classify_headers_seconds"] = round(time.perf_counter() - step_start, 4)
 
@@ -81,7 +79,7 @@ async def upload_csv(file: UploadFile = File(...)):
     dedup_results = {}
     df = pd.read_csv(file_path)
 
-    deduplicator = Deduplicator()
+    deduplicator = ProcessorFactory.create_deduplicator()
     columns_to_check = []
 
     if best_phone_col and best_phone_col in df.columns:

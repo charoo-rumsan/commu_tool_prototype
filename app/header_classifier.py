@@ -1,8 +1,8 @@
 # app/header_classifier.py
 import logging
 from typing import List, Dict, Any, Optional
-from .vector_search import VectorSearchEngine
 from .fuzzy_utils import fuzzy_ratio
+from .factories import ProcessorFactory
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class HeaderClassifier:
     ):
         self.threshold = threshold
         self.standard_labels = standard_labels 
-        self.vector_engine = VectorSearchEngine(
+        self.vector_engine = ProcessorFactory.create_vector_search_engine(
             collection_name="standard_labels_collection",
             host=qdrant_host,
             port=qdrant_port,
