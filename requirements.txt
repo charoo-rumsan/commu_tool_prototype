@@ -10,3 +10,4 @@ fuzzywuzzy
 python-Levenshtein
 numpy
 scikit-learn
+dspy-ai

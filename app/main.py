@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from typing import List
+from typing import List, Optional
 import uuid
 import shutil
 import pandas as pd
@@ -9,12 +9,16 @@ from .header_extraction import HeaderExtractor
 from .header_classifier import HeaderClassifier
 from .deduplication_utils import Deduplicator
 from .validation_utils import PhoneValidator, CitizenshipValidator
+from .header_labelling import standardize_headers
 
 app = FastAPI(title="Qdrant Header Processing Service")
 
 
 @app.post("/upload/")
-async def upload_csv(file: UploadFile = File(...)):
+async def upload_csv(
+    file: UploadFile = File(...),
+    standardize_headers: Optional[bool] = False,
+):
     """
     Unified endpoint:
     1. Upload and extract headers
@@ -93,12 +97,24 @@ async def upload_csv(file: UploadFile = File(...)):
     validated_df = df_polars.to_pandas()
 
     # ----------------------------------
-    # Step 6: Unified Response
+    # Step 6: Optional DSPy Header Standardization
     # ----------------------------------
-    return {
+    standardized_headers = None
+    if standardize_headers:
+        standardized_headers = standardize_headers(headers)
+
+    # ----------------------------------
+    # Step 7: Unified Response
+    # ----------------------------------
+    response = {
         "file_id": str(file_id),
         "extracted_headers": headers,
         "classified_headers": classified,
         "deduplication_results": dedup_results,
         "validation_summary": validated_df.head(10).to_dict(orient="records"),
     }
+
+    if standardized_headers is not None:
+        response["standardized_headers"] = standardized_headers
+
+    return response
