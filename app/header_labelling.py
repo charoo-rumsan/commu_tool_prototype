@@ -2,6 +2,16 @@ import dspy
 from typing import Iterable, List
 
 
+# Configure DSPy with your remote lightweight LLM endpoint.
+llm = dspy.LM(
+    model="llama3.1:latest",
+    base_url="https://jo3m4y06rnnwhaz.askbhunte.com",
+    api_key="",
+)
+
+dspy.configure(lm=llm)
+
+
 class StandardizeHeader(dspy.Signature):
     """Standardize a given CSV header name to a simpler, more usable format."""
 
